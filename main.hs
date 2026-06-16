@@ -1,32 +1,26 @@
-applyRule :: Int -> Int -> Int
-applyRule 1 1 = 2
+depth = 150
 
-applyRule 1 2 = 3
-applyRule 2 2 = 1
+ruleSet = fromString "231331"
 
-applyRule 1 3 = 1
-applyRule 2 3 = 2
-applyRule 3 3 = 1
-
-applyRule 1 4 = 2
-applyRule 2 4 = 3
-applyRule 3 4 = 4
-applyRule 4 4 = 1
-
--- Sierpinski's triangle: 212
--- Golden trio patterns:
-    -- rainbow (repetitive): 223131
-    -- hexagon (recursive): 213321
-
--- Stripped (1-2) sierpinski's triangle: 231331  (shown at the end of Part 1)
+-- Recursive:
+    -- Sierpinski's triangle: 212
+    -- hexagon (recursive): 213321 (golden trio)
+    -- Stripped (1-2) sierpinski's triangle: 231331  (shown at the end of Part 1)
     -- Stripped (2-3) sierpinski's triangle: 213312
--- Chaotic: 231131  (shown at the end of Part 1)
-    -- Trippy variant: 231121
+    -- Honeycomb triangle: 2134232431
 
-applyRule a b = applyRule b a -- make all rules commutative
+-- Repetitive:
+    -- shell rainbow: 223131 (golden trio)
+    -- shrinking pillars: 2134212143
+
+-- Chaotic:
+    -- 231131  (shown at the end of Part 1)
+    -- 231121
+    -- 2432143241  (variant: 2432143421)
+    -- 2134212431  (might be recursive but I don't think so)
 
 
-
+-- Styling code below!!
 red    = "\ESC[41m"
 green = "\ESC[42m"
 blue  = "\ESC[44m"
@@ -45,8 +39,26 @@ style 5 = cyan   ++ "  " ++ reset
 style 6 = yellow ++ "  " ++ reset
 style 7 = white  ++ "  " ++ reset
 
--- Main stuff below!!!
-depth = 80
+-- Processing code below!!
+fromString :: String -> [Int]
+fromString [] = []
+fromString (char:xs) =
+    let fromChar '1' = 1
+        fromChar '2' = 2
+        fromChar '3' = 3
+        fromChar '4' = 4
+        fromChar '5' = 5
+        fromChar '6' = 6
+        fromChar '7' = 7
+        fromChar _ = error ("Character " ++ [char] ++ " is not a valid state!")
+    in (fromChar char) : fromString xs
+
+applyRule :: Int -> Int -> Int
+applyRule a b | a > b = applyRule b a -- swap for canonical order
+applyRule a b =
+    let pos = (a-1) + (b*(b-1) `div` 2) in -- this computes position according to canonica order
+    if pos > length ruleSet then error ("Error! No rule for " ++ show a ++ " + " ++ show b)
+    else ruleSet !! pos
 
 data Layer = Layer [Maybe Int]
 combine :: (Maybe Int, Maybe Int) -> Maybe Int
