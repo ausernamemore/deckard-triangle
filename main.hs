@@ -41,6 +41,7 @@ style 6 = yellow ++ " " ++ reset
 style 7 = white  ++ " " ++ reset
 
 -- Main stuff below!!!
+depth = 80
 
 data Layer = Layer [Maybe Int]
 combine :: (Maybe Int, Maybe Int) -> Maybe Int
@@ -70,7 +71,5 @@ extendN 0 _ = error "Size can't be zero"
 extendN 1 x = [x]
 extendN n x = x : extendN (n-1) (next x)
 
-base = Layer [Just 1]
-
-main = showLayers $ extendN 80 base
+main = showLayers $ extendN depth (Layer [Just 1])
 
