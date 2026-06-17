@@ -1,0 +1,22 @@
+-- Recursive:
+    Sierpinski's triangle: 212
+    Hexagon (recursive):   213321 (golden trio)
+    Stripped (1-2) sierpinski's triangle: 231331  (shown at the end of Part 1)
+    Stripped (2-3) sierpinski's triangle: 213312
+    4-color sierpinski's: 2144214322
+
+-- Repetitive:
+    Shell rainbow: 223131 (golden trio)
+    Shrinking pillars: 2134212143
+    -- Honeycombs:
+        2134232431
+        2133244213
+        2432143244
+
+-- Chaotic:
+    231131  (shown at the end of Part 1)
+    231121
+    2432143241  (variant: 2432143421)
+    2134212431  (might be recursive but I don't think so)
+    2344321211
+

@@ -1,24 +1,4 @@
-depth = 150
-
-ruleSet = fromString "231331"
-
--- Recursive:
-    -- Sierpinski's triangle: 212
-    -- hexagon (recursive): 213321 (golden trio)
-    -- Stripped (1-2) sierpinski's triangle: 231331  (shown at the end of Part 1)
-    -- Stripped (2-3) sierpinski's triangle: 213312
-    -- Honeycomb triangle: 2134232431
-
--- Repetitive:
-    -- shell rainbow: 223131 (golden trio)
-    -- shrinking pillars: 2134212143
-
--- Chaotic:
-    -- 231131  (shown at the end of Part 1)
-    -- 231121
-    -- 2432143241  (variant: 2432143421)
-    -- 2134212431  (might be recursive but I don't think so)
-
+import System.Environment (getArgs)
 
 -- Styling code below!!
 red    = "\ESC[41m"
@@ -53,21 +33,12 @@ fromString (char:xs) =
         fromChar _ = error ("Character " ++ [char] ++ " is not a valid state!")
     in (fromChar char) : fromString xs
 
-applyRule :: Int -> Int -> Int
-applyRule a b | a > b = applyRule b a -- swap for canonical order
-applyRule a b =
-    let pos = (a-1) + (b*(b-1) `div` 2) in -- this computes position according to canonica order
-    if pos > length ruleSet then error ("Error! No rule for " ++ show a ++ " + " ++ show b)
-    else ruleSet !! pos
-
 data Layer = Layer [Maybe Int]
-combine :: (Maybe Int, Maybe Int) -> Maybe Int
-combine (Nothing, Just 1) = Just 1
-combine (Just 1, Nothing) = Just 1
-combine (Just a, Just b) = Just $ applyRule a b
 
-next :: Layer -> Layer
-next (Layer xs) = Layer $ map combine (zip (xs++[Nothing]) (Nothing:xs))
+type Combine = Int -> Int -> Int
+
+next :: Combine -> Layer -> Layer
+next combine (Layer xs) = Layer $ map (combineFromRules combine) (zip (xs++[Nothing]) (Nothing:xs))
 
 instance Show Layer where
     show (Layer []) = ""
@@ -83,10 +54,31 @@ showLayers layers =
                 printLayer (height-1) xs
     in printLayer width layers
 
-extendN :: Int -> Layer -> [Layer]
-extendN 0 _ = error "Size can't be zero"
-extendN 1 x = [x]
-extendN n x = x : extendN (n-1) (next x)
+extendN :: Combine -> Int -> Layer -> [Layer]
+extendN combine 0 _ = error "Size can't be zero"
+extendN combine 1 x = [x]
+extendN combine n x = x : extendN combine (n-1) (next combine x)
 
-main = showLayers $ extendN depth (Layer [Just 1])
+combineFromRules :: (Int -> Int -> Int) -> (Maybe Int, Maybe Int) -> Maybe Int
+combineFromRules runRule (Nothing, Just 1) = Just 1
+combineFromRules runRule (Just 1, Nothing) = Just 1
+combineFromRules runRule (Just a, Just b) = Just $ runRule a b
+
+applyRule :: [Int] -> (Int -> Int -> Int)
+applyRule ruleSet a b | a > b = applyRule ruleSet b a -- swap for canonical order
+applyRule ruleSet a b =
+    let pos = (a-1) + (b*(b-1) `div` 2) in -- this computes position according to canonica order
+    if pos >= length ruleSet then error ("Error! No rule for " ++ show a ++ " + " ++ show b)
+    else ruleSet !! pos
+
+main = do
+    args <- getArgs
+    case args of
+        [] -> putStrLn "No ruleset provided!"
+        (rules:rest) ->
+            let ruleSet = fromString rules in
+            let depth = case rest of
+                    [] -> 60 -- default depth
+                    (custom:_) -> read custom
+            in showLayers $ extendN (applyRule ruleSet) depth (Layer [Just 1])
 
